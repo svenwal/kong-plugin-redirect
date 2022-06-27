@@ -1,27 +1,35 @@
-local typedefs = require "kong.db.schema.typedefs"
+-- If you're not sure your plugin is executing, uncomment the line below and restart Kong
+-- then it will throw an error which indicates the plugin is being loaded at least.
 
--- Grab pluginname from module name
-local plugin_name = ({...})[1]:match("^kong%.plugins%.([^%.]+)")
+--assert(ngx.get_phase() == "timer", "The world is coming to an end!")
 
-local schema = {
-  name = plugin_name,
-  fields = {
-    -- the 'fields' array is the top-level entry with fields defined by Kong
-    { consumer = typedefs.no_consumer },  -- this plugin cannot be configured on a consumer (typical for auth plugins)
-    { protocols = typedefs.protocols_http },
-    { config = {
-        -- The 'config' record is the custom part of the plugin schema
-        type = "record",
-        fields = {
-          -- a standard defined field (typedef), with some customizations
-          { keycloak_url = { -- self defined field
-              type = "string",
-              required = true,
-              }}, -- adding a constraint for the value
-        },
-        entity_checks = {
-        },
-      },
-    },
-  },
-}
+---------------------------------------------------------------------------------------------
+-- In the code below, just remove the opening brackets; `[[` to enable a specific handler
+--
+-- The handlers are based on the OpenResty handlers, see the OpenResty docs for details
+-- on when exactly they are invoked and what limitations each handler has.
+---------------------------------------------------------------------------------------------
+
+
+
+local plugin = {
+    PRIORITY = 1000, -- set the plugin priority, which determines plugin execution order
+    VERSION = "0.1",
+  }
+  
+  function plugin:access(plugin_conf)
+    local location = plugin_conf.location_url
+    if plugin_conf.forward_query_parameters then 
+--  TODO make the below check to avoid adding empty ? to all urls
+--      if not kong.request.get_raw_query() == nil then
+        location = location .. "?" .. kong.request.get_raw_query()
+--      end 
+    end
+    local headers = {
+      Location = location
+    }
+    kong.response.exit(plugin_conf.status_code, '', headers)
+  end
+  
+  
+  return plugin
