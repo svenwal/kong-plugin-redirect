@@ -1,7 +1,7 @@
 # Kong plugin for redirecting calls
 
 # About
-A Kong 🦍 Plugin forwarding a request to another location. It us using standard http status codes and the the location header
+A Kong 🦍 Plugin forwarding a request to another location. It us using standard http status codes and the location header
 
 ## Configuration parameters
 |FORM PARAMETER|DEFAULT|DESCRIPTION|
